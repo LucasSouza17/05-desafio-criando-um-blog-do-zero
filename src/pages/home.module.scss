@@ -2,6 +2,21 @@
   max-width: 900px;
   margin: 2rem auto 0;
 
+  button {
+    background: transparent;
+    border: none;
+    color: var(--highlight);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 4rem;
+
+    transition: filter 0.2s;
+  }
+
+  &:hover button {
+    filter: brightness(0.8);
+  }
+
   a {
     display: block;
 
