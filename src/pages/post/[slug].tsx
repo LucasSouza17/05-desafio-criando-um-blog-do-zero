@@ -11,10 +11,13 @@ import { getPrismicClient } from '../../services/prismic';
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 import { useRouter } from 'next/router';
+import { Comments } from '../../components/Comments';
+import Link from 'next/link';
 
 interface Post {
   uid: string;
   first_publication_date: string | null;
+  last_publication_date: string | null;
   data: {
     title: string;
     banner: {
@@ -30,24 +33,42 @@ interface Post {
   };
 }
 
-interface PostProps {
-  post: Post;
+interface Navigation {
+  prevPost: {
+    slug: string;
+    title: string;
+  };
+  nextPost: {
+    slug: string;
+    title: string;
+  };
 }
 
-export default function Post({ post }: PostProps) {
+interface PostProps {
+  post: Post;
+  navigation: Navigation;
+}
+
+export default function Post({ post, navigation }: PostProps) {
   const router = useRouter();
 
   if (router.isFallback) {
     return <h1>Carregando...</h1>;
   }
 
-  console.log(post);
-
   const firstPublicationDateFormatted = format(
     new Date(post.first_publication_date),
     'dd MMM yyyy',
     { locale: ptBR }
   );
+
+  const lastPublicationDateFormatted =
+    '* editado em ' +
+    format(new Date(post.last_publication_date), 'dd MMM yyyy', {
+      locale: ptBR,
+    }) +
+    ', às ' +
+    format(new Date(post.last_publication_date), 'p', { locale: ptBR });
 
   const readingTime = () => {
     const totalWords = post.data.content.reduce((total, contentItem) => {
@@ -91,6 +112,10 @@ export default function Post({ post }: PostProps) {
                 <span>{readingTime()}</span>
               </div>
             </div>
+            {new Date(post.first_publication_date) <
+              new Date(post.last_publication_date) && (
+              <span>{lastPublicationDateFormatted}</span>
+            )}
           </div>
 
           <article>
@@ -109,6 +134,35 @@ export default function Post({ post }: PostProps) {
             })}
           </article>
         </div>
+
+        <section className={styles.footer}>
+          <div className={styles.separator} />
+
+          <div className={styles.containerNavigation}>
+            <div className={styles.navigation}>
+              {navigation.prevPost.slug && (
+                <>
+                  <span>{navigation.prevPost.title}</span>
+                  <Link href={`/post/${navigation.prevPost.slug}`}>
+                    <a>Post anterior</a>
+                  </Link>
+                </>
+              )}
+            </div>
+            <div className={styles.navigation}>
+              {navigation.nextPost.slug && (
+                <>
+                  <span>{navigation.nextPost.title}</span>
+                  <Link href={`/post/${navigation.nextPost.slug}`}>
+                    <a>Próximo post</a>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+
+          <Comments />
+        </section>
       </main>
     </>
   );
@@ -151,9 +205,28 @@ export const getStaticProps: GetStaticProps = async context => {
   const prismic = getPrismicClient();
   const response = await prismic.getByUID('post', String(slug), {});
 
+  const prevPost = await prismic.query(
+    [Prismic.Predicates.at('document.type', 'post')],
+    {
+      pageSize: 1,
+      after: response.id,
+      orderings: '[document.first_publication_date desc]',
+    }
+  );
+
+  const nextPost = await prismic.query(
+    [Prismic.Predicates.at('document.type', 'post')],
+    {
+      pageSize: 1,
+      after: response.id,
+      orderings: '[document.first_publication_date]',
+    }
+  );
+
   const post = {
     uid: response.uid,
     first_publication_date: response.first_publication_date,
+    last_publication_date: response.last_publication_date,
     data: {
       title: response.data.title,
       subtitle: response.data.subtitle,
@@ -170,9 +243,21 @@ export const getStaticProps: GetStaticProps = async context => {
     },
   };
 
+  const navigation = {
+    prevPost: {
+      slug: prevPost?.results[0]?.uid ?? null,
+      title: prevPost?.results[0]?.data.title ?? null,
+    },
+    nextPost: {
+      slug: nextPost?.results[0]?.uid ?? null,
+      title: nextPost?.results[0]?.data.title ?? null,
+    },
+  };
+
   return {
     props: {
       post,
+      navigation,
     },
     revalidate: 60 * 30, // 30 minutes
   };

@@ -5,7 +5,7 @@
 }
 
 .post {
-  padding: 0 1.3125rem;
+  max-width: 700px;
   margin-top: 5rem;
 
   .postHeader {
@@ -16,6 +16,14 @@
       font-size: 3rem;
       color: var(--heading);
       line-height: 3.630625rem;
+    }
+
+    > span {
+      display: block;
+      font-size: 0.875;
+      font-style: italic;
+      margin-top: 1rem;
+      color: var(--info);
     }
 
     .metadata {
@@ -76,10 +84,9 @@
   }
 
   article {
-
     h2 {
       color: var(--heading);
-      font-size: 2.25rem
+      font-size: 2.25rem;
     }
 
     .postContent {
@@ -102,7 +109,7 @@
       }
 
       pre {
-        background: var(--gray-900);
+        background: var(--gray-700);
         border: 0;
         border-left: 3px solid var(--yellow-500);
         color: var(--gray-100);
@@ -117,11 +124,57 @@
         display: block;
         word-wrap: break-word;
       }
+    }
+  }
+}
 
-      &.previewContent {
-        background: linear-gradient(var(--gray-100), transparent);
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+.footer {
+  display: block;
+  margin-top: 3.75rem;
+
+  .separator {
+    width: 100%;
+    height: 1px;
+    background-color: var(--body);
+    opacity: 0.1;
+    margin-bottom: 3rem;
+  }
+
+  .containerNavigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 5rem;
+
+    .navigation {
+      display: flex;
+      flex-direction: column;
+
+      span {
+        font-size: 1.125rem;
+        color: var(--heading);
+      }
+
+      a {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--highlight);
+        margin-top: 0.5rem;
+        cursor: pointer;
+
+        transition: filter 0.2s;
+      }
+
+      &:hover a {
+        filter: brightness(0.8);
+      }
+
+      &:last-child span {
+        text-align: right;
+      }
+      &:last-child a {
+        text-align: right;
       }
     }
   }

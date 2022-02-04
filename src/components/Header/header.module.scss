@@ -3,11 +3,15 @@
 }
 
 .headerContent {
-  max-width: 900px;
+  max-width: 700px;
   height: 7rem;
   margin: 0 auto;
   padding: 0 2rem;
 
   display: flex;
   align-items: center;
+
+  &:hover a {
+    cursor : pointer;
+  }
 }
