@@ -1,18 +1,23 @@
+import { GetStaticPaths, GetStaticProps } from 'next';
+import Link from 'next/link';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { GetStaticPaths, GetStaticProps } from 'next';
-import Head from 'next/head';
+
 import { RichText } from 'prismic-dom';
 import Prismic from '@prismicio/client';
-import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
-
 import { getPrismicClient } from '../../services/prismic';
+
+import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
+import { Comments } from '../../components/Comments';
+import Loader from '../../components/Loader';
+import Custom404 from '../404';
 
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
-import { useRouter } from 'next/router';
-import { Comments } from '../../components/Comments';
-import Link from 'next/link';
+import useUpdatePreviewRef from '../../utils/useUpdatePreviewRef';
 
 interface Post {
   uid: string;
@@ -47,14 +52,29 @@ interface Navigation {
 interface PostProps {
   post: Post;
   navigation: Navigation;
+  preview: boolean;
+  previewData: {
+    ref: string | null;
+  };
 }
 
-export default function Post({ post, navigation }: PostProps) {
+export default function Post({
+  post,
+  navigation,
+  preview,
+  previewData,
+}: PostProps) {
   const router = useRouter();
 
   if (router.isFallback) {
-    return <h1>Carregando...</h1>;
+    return <Loader />;
   }
+
+  if (!post.uid) {
+    return <Custom404 />;
+  }
+
+  useUpdatePreviewRef(previewData?.ref ?? null, post.uid);
 
   const firstPublicationDateFormatted = format(
     new Date(post.first_publication_date),
@@ -162,6 +182,14 @@ export default function Post({ post, navigation }: PostProps) {
           </div>
 
           <Comments />
+
+          {preview && (
+            <aside className={commonStyles.buttonPreview}>
+              <Link href="/api/exit-preview">
+                <a>Sair do modo Preview</a>
+              </Link>
+            </aside>
+          )}
         </section>
       </main>
     </>
@@ -191,6 +219,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps = async context => {
   const {
     params: { slug },
+    previewData,
+    preview = false,
   } = context;
 
   if (slug === 'favicon.png') {
@@ -203,7 +233,9 @@ export const getStaticProps: GetStaticProps = async context => {
   }
 
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('post', String(slug), {});
+  const response = await prismic.getByUID('post', String(slug), {
+    ref: previewData?.ref ?? null,
+  });
 
   const prevPost = await prismic.query(
     [Prismic.Predicates.at('document.type', 'post')],
@@ -258,6 +290,8 @@ export const getStaticProps: GetStaticProps = async context => {
     props: {
       post,
       navigation,
+      preview,
+      previewData: previewData ?? null,
     },
     revalidate: 60 * 30, // 30 minutes
   };

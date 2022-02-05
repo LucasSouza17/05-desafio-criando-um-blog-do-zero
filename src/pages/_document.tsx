@@ -11,7 +11,7 @@ export default class MyDocument extends Document {
             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;600&display=swap"
             rel="stylesheet"
           />
-
+          <script async defer src={`//static.cdn.prismic.io/prismic.js?repo=${process.env.PRISMIC_REPO_NAME}&new=true`} />
           <link rel="shortcut icon" href="favicon.png" type="image/png" />
         </Head>
         <body>
