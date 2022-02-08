@@ -4,7 +4,7 @@ Spacetraveling faz parte de um desafio do curso Ignite - Trilha ReactJS da Rocke
 
 ## Demonstração
 
-![App Screenshot](https://i.ibb.co/YW0XJ8k/2022-02-08-20-13-22.gif)
+https://i.ibb.co/YW0XJ8k/2022-02-08-20-13-22.gif
 
 
 ## Funcionalidades
